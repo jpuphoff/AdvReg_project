@@ -12,7 +12,7 @@ author:
 corrauthor:
   url: https://www.uc3m.es
 abstract: >
-  Linear quantile regression extends ordinary least squares (OLS) by modeling conditional quantiles of a response variable as linear functions of predictors. This offers a more complete view of the conditional distribution, revealing heterogeneous effects not captured by mean regression. Unlike OLS, quantile regression makes no strict distributional assumptions and is robust to outliers. We review the formulation, estimation, and inference for linear quantile regression, contrasting it with OLS. A simulation study compares OLS and quantile regression at various quantile levels (0.1 to 0.9) in both univariate and multivariate settings. We examine performance under normal and heavy-tailed error distributions, including scenarios with outliers, and assess the impact of sample size. The results illustrate that quantile regression estimates remain reliable under outlier contamination and uncover distributional effects (e.g. heteroscedasticity) that OLS misses. All simulation code is provided in R for reproducibility.
+  Ordinary least squares (OLS) regression fits the mean and is sensitive to extreme observations, whereas quantile regression (e.g. median regression) fits conditional quantiles and tends to be more robust to outliers. We conduct a simulation study comparing OLS and median (50% quantile) regression under increasing levels of outlier contamination in the response variable. Synthetic data are generated from a simple linear model and a fraction of responses are replaced by large aberrant values. We fit both OLS and quantile regression and compare the resulting coefficient estimates. As expected, OLS estimates become severely biased in the presence of outliers, while the median regression estimates remain closer to the true values. These findings confirm that quantile regression can better resist outliers than OLS
 keywords: [OLS, Quantile Regression, Machine Learning]
 JEL: [C45, C55]
 acknowledgements: >
@@ -136,22 +136,32 @@ library(kableExtra)
 set.seed(666)
 beta0 <- 5; beta1 <- 1.5; beta2 <- -1.0
 n_sim <- 100
-outlier_frac <- 0.05
+outlier_frac <- 0.02
 outlier_shift <- 30
-tau_levels <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+tau_levels <- c(0.025, 0.25, 0.5, 0.75, 0.975)
 
 # Simulation function
-simulate_data <- function(n = 200, outliers = FALSE, multivariate = FALSE, heterosk = FALSE) {
+simulate_data <- function(n = 200, multivariate = FALSE, heterosk = FALSE) {
   x1 <- runif(n, 0, 10)
   x2 <- if (multivariate) runif(n, 0, 10) else rep(0, n)
-  sd_e <- if (heterosk) (1 + 0.2*x1) else 2
+  sd_e <- if (heterosk) (1 + 0.6*x1) else 2
   e <- rnorm(n, mean = 0, sd = sd_e)
   y <- beta0 + beta1 * x1 + beta2 * x2 + e
-  if (outliers) {
-    idx <- sample(1:n, size = ceiling(outlier_frac * n))
-    y[idx] <- y[idx] + outlier_shift
-  }
-  data.frame(y = y, x1 = x1, x2 = x2)
+  data.frame(y = y, x1 = x1, x2 = x2) 
+}
+
+add_high_leverage_point <- function(data) {
+  # Define a new x1 value far beyond the existing range
+  new_x1 <- max(data$x1)
+  new_x2 <- mean(data$x2) + 1  # Reasonable x2 value
+  new_y <- max(data$y) * 20  # Extreme y value for high leverage
+
+  # Create a new data point
+  new_point <- data.frame(y = new_y, x1 = new_x1, x2 = new_x2)
+
+  # Append it to the original dataset
+  data_out <- rbind(data, new_point)
+  return(data_out)
 }
 
 # Fit models function
@@ -166,38 +176,27 @@ fit_models <- function(data, multivariate = FALSE) {
   list(ols = ols, qrs = qrs)
 }
 # Different scenarios
+
+multivariate_data = simulate_data(n=500, multivariate=TRUE, heterosk = TRUE)
+multivariate_data_outlier = add_high_leverage_point(multivariate_data)
+
 scenarios <- list(
-  clean_uni = simulate_data(n=200, outliers=FALSE, multivariate=FALSE),
-  outlier_uni = simulate_data(n=200, outliers=TRUE, multivariate=FALSE),
-  clean_multi = simulate_data(n=200, outliers=FALSE, multivariate=TRUE),
-  outlier_multi = simulate_data(n=200, outliers=TRUE, multivariate=TRUE),
-  heterosk_uni = simulate_data(n=200, outliers=FALSE, multivariate=FALSE, heterosk=TRUE)
+  clean_multi = multivariate_data,
+  outlier_multi = multivariate_data_outlier
 )
 
 # Fit models
-models <- lapply(names(scenarios), function(name) {
-  fit_models(scenarios[[name]], multivariate = grepl("multi", name))
-})
-names(models) <- names(scenarios)
+models <- list(
+  clean_multi = fit_models(scenarios$clean_multi, multivariate = TRUE),
+  outlier_multi = fit_models(scenarios$outlier_multi, multivariate = TRUE)
+)
 ```
 
 # Introduction.
 
-Regression analysis typically focuses on modeling the conditional mean of a response given predictors (as in ordinary least squares, OLS). In contrast, quantile regression (QR) aims to model conditional quantiles (e.g., median, quartiles) of the response variable. Koenker and Bassett (1978) first introduced linear quantile regression, generalizing the regression model beyond the mean to an ensemble of conditional quantile functions.
+Classical linear regression (ordinary least squares, OLS) fits a line by minimizing the sum of squared residuals, which targets the conditional mean of the response variable. However, because OLS puts heavy weight on large deviations, its estimates can be strongly affected by even a few outliers. In contrast, quantile regression extends median regression to any conditional quantile (e.g. the 50% quantile) and minimizes an asymmetrically weighted absolute loss. A key advantage of quantile regression is its robustness: the influence function of the median is bounded, so regression quantiles inherit a high breakdown point. In practical terms, estimates like the conditional median are not pulled as far by extreme values. Prior studies confirm these properties: for example, Herawati (2020) showed in simulations that median regression provided smaller mean-squared error than OLS when outliers are present. In this article, we compare OLS and quantile regression for a linear model under controlled outlier contamination. We focus on interpreting simulation results (accessible to students) rather than deep theory.
 
-Quantile regression provides several advantages over OLS. First, it allows us to explore the entire conditional distribution of $Y$ given $X$, not just the mean, thereby revealing heterogeneous effects of predictors at different outcome levels . For example, an education variable might have a larger impact at the lower tail (10th percentile) of income than at the median or upper tail.
-
-Second, quantile regression is robust to outliers in the response data. OLS estimates can be unduly influenced by a few extreme observations because it minimizes squared errors; in contrast, quantile regression (especially median regression) uses absolute-error-based loss, making it less sensitive to extreme $Y$ values. 
-
-Third, quantile methods remain valid under skewed or heteroskedastic distributions. OLS relies on homoscedasticity and normality assumptions for optimality and inference, whereas quantile regression imposes no such requirements and can capture distributional changes (e.g., increasing variance) across predictor levels.
-
-There are, of course, other approaches to address OLS limitations. Notably, researchers have developed robust regression methods and penalization techniques. For instance, Fan and Li (2001) proposed nonconcave penalized likelihood methods for variable selection, which can be applied to robust regression models.
-
-In this article, we provide an overview of linear quantile regression theory (Section 2) and present a simulation study (Section 3) comparing quantile regression to OLS under various scenarios. We consider both univariate and multivariate predictor cases, examine performance at multiple quantile levels, and evaluate robustness to outliers and sample size changes. A concluding section summarizes the findings. Throughout, we cite key references, including Koenker and Hallock (2001) for an accessible overview, and Fan and Li (2001) for context on related regression advances. The complete R code for our analysis is provided in the Appendix to ensure reproducibility.
-
-  
-
-# 2. Linear Quantile Regression: Theory and Methods
+# Linear Quantile Regression: Theory and Methods
 
 ## Definition and Estimation
 
@@ -244,65 +243,74 @@ Moreover, QR is **robust to outliers in $Y$**, unlike OLS which minimizes square
 In the next section, we illustrate these theoretical advantages through a simulation study.
 
 
-# 3. Simulation Study
+# Simulation Study
 
-This section presents a Monte Carlo simulation study designed to compare the performance of **Ordinary Least Squares (OLS)** and **Quantile Regression (QR)** estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave across different quantiles of the conditional distribution, particularly under heteroskedasticity, outlier contamination, and varying sample sizes.
+This section presents a Monte Carlo simulation study designed to compare the performance of **Ordinary Least Squares (OLS)** and **Quantile Regression (QR)** estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave, particularly under outlier contamination.
 
-## 3.1 Data Generating Process (DGP)
+## Data Generating Process (DGP)
 
 We consider the linear model:
 
 $$
-Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon,
+Y = \beta_0 + \beta_1 X_1 + \varepsilon,
 $$
 
-with fixed parameters $\beta_0 = 5$, $\beta_1 = 1.5$, and $\beta_2 = -1$. In the univariate setting, only $X_1$ is included; in the multivariate setting, both $X_1$ and $X_2$ are active predictors.
+with fixed parameters $\beta_0 = 5$, $\beta_1 = -1.5$.
 
-- **Covariates**: $X_1, X_2 \overset{iid}{\sim} \text{Uniform}(0,10)$.
+- **Covariates**: $X_1 \overset{iid}{\sim} \text{Uniform}(0,10)$.
 - **Error term** $\varepsilon$ follows different structures to emulate classical and adversarial settings (see below).
 - **Quantiles studied**: $\tau = 0.1$, $0.5$, $0.9$ to represent lower, central, and upper tails of the conditional distribution.
 
-We focus on:
-- **Small to large sample regimes**: $n = 50$, $100$, $200$, and $1000$.
-- **Replications**: Each configuration is simulated over 100 independent datasets to stabilize the evaluation of finite-sample properties.
-
-The sample sizes were chosen to explore both low-$n$ variability and convergence behavior, with $n=100$ serving as a baseline and $n=1000$ approximating asymptotic regimes.
-
 We estimate parameters using:
+
 - `lm()` for OLS (minimizing squared loss)
 - `rq()` from the `quantreg` package for QR at various $\tau$ values (minimizing asymmetric absolute loss; see Section 2).
 
-## 3.2 Simulation Setup
+```{r}
+set.seed(123)
+beta0 <- 5
+beta1 <- 1.5 
+n <- 1000
+X1 <- runif(n, min = 0, max = 10)
+tau=c(0.05,0.25,0.5,0.75,0.95)
+```
 
-We evaluate the estimators under three error structures:
+
+## Simulation Setup
+
+We evaluate the estimators under the following error structures:
 
 - **Homoscedastic Gaussian**:
   $\varepsilon_i \sim \mathcal{N}(0, \sigma^2),\ \sigma=2$. This setting satisfies OLS assumptions and serves as a benchmark.
+  
+  
+```{r, echo= FALSE}
+y_clean <- beta0 - beta1*X1 + rnorm(n, sd=2)
 
+
+ols_clean <- lm(y_clean ~ X1)
+qr_clean <- rq(y_clean ~ X1, tau =0.5)
+
+```
+  
 - **Contaminated Gaussian (outliers)**:
-  $\varepsilon_i = Z_i + O_i$ with $Z_i \sim \mathcal{N}(0,2^2)$ and $O_i = 30$ with probability $p = 0.05$. This mimics a heavy-tailed distribution or a mixture contamination model, testing robustness. Outliers are introduced:
-  - randomly (to simulate noise in $Y$),
-  - or conditionally (e.g. to the largest $X_1$) to induce high-leverage effects.
+  $\varepsilon_i = Z_i + O_i$ with $Z_i \sim \mathcal{N}(0,2^2)$ and $O_i = 50$ with probability $p = 0.05$. This mimics a mixture contamination model, testing robustness. Outliers are introduced conditionally (to the largest $X_1$) to induce high-leverage effects.
+  
+```{r, echo= FALSE}
+y_outliers <- y_clean
+num_outliers <- round(0.05 * n)
+out_idx <- order(X1, decreasing = TRUE)[1:num_outliers]
+y_outliers[out_idx] <- y_outliers[out_idx] + 50
+```
+
+  
 
 - **Heteroskedastic**:
   $\varepsilon_i \sim \mathcal{N}(0,\sigma^2(X_i))$ with $\sigma(X_i) = 1 + 0.2 X_1$. This setting creates increasing spread in $Y$ conditional on $X_1$, violating OLS homoscedasticity.
+  
 
-## 3.3 Evaluation Metrics
-
-For each simulation, we extract the slope estimates (primarily for $\beta_1$) and compute:
-
-- **Bias**:
-  $$ 
-  \text{Bias}(\hat\beta) = \mathbb{E}[\hat\beta] - \beta
-  $$
-
-- **RMSE**:
-  $$
-  \text{RMSE}(\hat\beta) = \sqrt{\mathbb{E}[(\hat\beta - \beta)^2]}
-  $$
-
-- **Empirical variability**: Standard deviation of estimates across replications.
-
+## Evaluation Metrics
+*****PENDING*****
 Along with some graphical support, these evaluations provide insight into estimator consistency, robustness, and efficiency under both ideal and adversarial conditions.
 
 The theoretical basis for QR (Section 2) suggests that:
@@ -310,40 +318,121 @@ The theoretical basis for QR (Section 2) suggests that:
 - QR provides robust, distribution-sensitive estimation that remains valid when these assumptions are violated.
 
 This simulation seeks to verify those expectations empirically.
+```{r}
+```
 
-## 3.4 Simulation
-```{r boxplots-2x2, fig.width=9, fig.height=6, fig.cap="Comparison of slope estimates across settings"}
-library(gridExtra)
+## Simulation
 
-plot_one <- function(data, model, title) {
-  ggplot(data, aes(x = x1, y = y)) +
-    geom_point(alpha = 0.5) +
-    geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
-    geom_quantile(quantiles = tau_levels, color = "blue", size = 0.8) +
-    ggtitle(title) +
-    theme_minimal()
-}
+```{r, echo=FALSE}
+plot(X1, y_clean, main = "OLS vs Multiple Quantile Regressions (Clean Data)",
+     xlab = "X1", ylab = "Y", pch = 16, cex = 0.6, col = "grey")
+abline(qr_clean, col = "blue", lwd = 1.5, lty = 1)
+abline(ols_clean, col = "red", lwd = 3, lty = 2)
 
-grid.arrange(
-  plot_one(scenarios$clean_uni, models$clean_uni, "Clean Univariate"),
-  plot_one(scenarios$outlier_uni, models$outlier_uni, "Outlier Univariate"),
-  plot_one(scenarios$clean_multi, models$clean_multi, "Clean Multivariate"),
-  plot_one(scenarios$outlier_multi, models$outlier_multi, "Outlier Multivariate"),
-  ncol = 2
+legend("topleft",
+       legend = c(paste("QR tau =", 0.5), "OLS"),
+       col = c(rep("blue"), "red"),
+       lty = c(rep(1, length(tau)), 2),
+       lwd = c(rep(1.5, length(tau)), 3),
+       cex = 0.8)
+```
+
+```{r, echo=FALSE}
+ols_coef <- coef(ols_clean)
+qr_coef_matrix <- coef(qr_clean)
+
+
+coef_df <- data.frame(OLS = ols_coef)
+
+coef_df <- cbind(coef_df, qr_coef_matrix)
+
+colnames(coef_df) <- c("OLS", paste("QR", sprintf("%.2f", 0.5)))
+
+coef_df <- rownames_to_column(coef_df, var = "Coefficient")
+
+
+kable_table <- knitr::kable(
+  coef_df,
+  digits = 3, # Round to 3 decimal places
+  format = "pipe", # Use 'pipe' for markdown-like table, or 'html', 'latex'
+  caption = "Comparison of OLS and Quantile Regression Coefficients (Clean Data) - Manual",
+  align = c('l', rep('r', ncol(coef_df)-1)) # Align columns
 )
+
+kable_table
 ```
 
-```{r slope-summary-table, results='asis'}
-summarize_slopes <- function(model) {
-  slopes <- sapply(model$qrs, function(m) coef(m)["x1"])
-  tibble(
-    Method = c(paste0("QR (tau=", tau_levels, ")"), "OLS"),
-    Estimate = c(slopes, coef(model$ols)["x1"])
-  )
-}
+```{r, echo=FALSE}
+ols_outliers = lm(y_outliers ~ X1)
+qr_outliers = rq(y_outliers ~ X1, tau = 0.5)
 
-summarize_slopes(models$clean_uni)
+
+
+ols_coef <- coef(ols_outliers)
+qr_coef_matrix <- coef(qr_outliers)
+
+
+coef_df <- data.frame(OLS = ols_coef)
+
+coef_df <- cbind(coef_df, qr_coef_matrix)
+
+colnames(coef_df) <- c("OLS", paste("QR", sprintf("%.2f", 0.5)))
+
+coef_df <- rownames_to_column(coef_df, var = "Coefficient")
+
+
+kable_table <- knitr::kable(
+  coef_df,
+  digits = 3, # Round to 3 decimal places
+  format = "pipe", # Use 'pipe' for markdown-like table, or 'html', 'latex'
+  caption = "Comparison of OLS and Quantile Regression Coefficients (Clean Data) - Manual",
+  align = c('l', rep('r', ncol(coef_df)-1)) # Align columns
+)
+
+kable_table
 ```
+
+```{r, echo=FALSE}
+plot(X1, y_outliers, main = "OLS vs Quantile Regressions (Outliers Data)",
+     xlab = "X1", ylab = "Y", pch = 16, cex = 0.6, col = "grey")
+
+
+qr_i <- rq(y_outliers ~ X1, tau = 0.5)
+abline(qr_i, col = "blue", lwd = 1.5, lty = 1)
+
+
+abline(ols_outliers, col = "red", lwd = 3, lty = 2)
+
+legend("topleft",
+       legend = c(paste("QR tau =", 0.5), "OLS"),
+       col = c(rep("blue", length(0.5)), "red"),
+       lty = c(rep(1, length(0.5)), 2),
+       lwd = c(rep(1.5, length(0.5)), 3),
+       cex = 0.8)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r plot-coef-vs-quantile, fig.cap="Slope vs Quantile for heteroskedastic case"}
 set.seed(666)
@@ -365,13 +454,20 @@ ggplot(plot_df, aes(x = tau, y = slope)) +
   theme_minimal()
 ```
 ```{r anova-quantiles}
-fit25 <- rq(y ~ x1, tau=0.25, data=scenarios$clean_uni)
-fit50 <- rq(y ~ x1, tau=0.5, data=scenarios$clean_uni)
-fit75 <- rq(y ~ x1, tau=0.75, data=scenarios$clean_uni)
+fit25 <- rq(y ~ x1, tau=0.25, data=scenarios$clean_multi)
+fit50 <- rq(y ~ x1, tau=0.5, data=scenarios$clean_multi)
+fit75 <- rq(y ~ x1, tau=0.75, data=scenarios$clean_multi)
 
 anova(fit25, fit50, fit75)
 #kbl(anova_table, caption = "Joint Test of Equality of Slopes at Different Quantiles") %>%
 #  kable_styling(latex_options = "striped")
+
+
+fit25_h <- rq(y ~ x1, tau=0.25, data=scenarios$outlier_multi)
+fit50_h <- rq(y ~ x1, tau=0.5, data=scenarios$outlier_multi)
+fit75_h <- rq(y ~ x1, tau=0.75, data=scenarios$outlier_multi)
+
+anova(fit25_h, fit50_h, fit75_h)
 ```
 
 ```{r other-plots}

@@ -155,7 +155,7 @@ Gerard Palomo \& Juan Pablo Uphoff\textsuperscript{}
 %----------------------------------------------------------------------------------------
 
 \Abstract{
-Linear quantile regression extends ordinary least squares (OLS) by modeling conditional quantiles of a response variable as linear functions of predictors. This offers a more complete view of the conditional distribution, revealing heterogeneous effects not captured by mean regression. Unlike OLS, quantile regression makes no strict distributional assumptions and is robust to outliers. We review the formulation, estimation, and inference for linear quantile regression, contrasting it with OLS. A simulation study compares OLS and quantile regression at various quantile levels (0.1 to 0.9) in both univariate and multivariate settings. We examine performance under normal and heavy-tailed error distributions, including scenarios with outliers, and assess the impact of sample size. The results illustrate that quantile regression estimates remain reliable under outlier contamination and uncover distributional effects (e.g.~heteroscedasticity) that OLS misses. All simulation code is provided in R for reproducibility.
+Ordinary least squares (OLS) regression fits the mean and is sensitive to extreme observations, whereas quantile regression (e.g.~median regression) fits conditional quantiles and tends to be more robust to outliers. We conduct a simulation study comparing OLS and median (50\% quantile) regression under increasing levels of outlier contamination in the response variable. Synthetic data are generated from a simple linear model and a fraction of responses are replaced by large aberrant values. We fit both OLS and quantile regression and compare the resulting coefficient estimates. As expected, OLS estimates become severely biased in the presence of outliers, while the median regression estimates remain closer to the true values. These findings confirm that quantile regression can better resist outliers than OLS
 }
 
 %----------------------------------------------------------------------------------------
@@ -178,19 +178,9 @@ Linear quantile regression extends ordinary least squares (OLS) by modeling cond
 
 \section{Introduction.}\label{introduction.}
 
-Regression analysis typically focuses on modeling the conditional mean of a response given predictors (as in ordinary least squares, OLS). In contrast, quantile regression (QR) aims to model conditional quantiles (e.g., median, quartiles) of the response variable. Koenker and Bassett (1978) first introduced linear quantile regression, generalizing the regression model beyond the mean to an ensemble of conditional quantile functions.
+Classical linear regression (ordinary least squares, OLS) fits a line by minimizing the sum of squared residuals, which targets the conditional mean of the response variable. However, because OLS puts heavy weight on large deviations, its estimates can be strongly affected by even a few outliers. In contrast, quantile regression extends median regression to any conditional quantile (e.g.~the 50\% quantile) and minimizes an asymmetrically weighted absolute loss. A key advantage of quantile regression is its robustness: the influence function of the median is bounded, so regression quantiles inherit a high breakdown point. In practical terms, estimates like the conditional median are not pulled as far by extreme values. Prior studies confirm these properties: for example, Herawati (2020) showed in simulations that median regression provided smaller mean-squared error than OLS when outliers are present. In this article, we compare OLS and quantile regression for a linear model under controlled outlier contamination. We focus on interpreting simulation results (accessible to students) rather than deep theory.
 
-Quantile regression provides several advantages over OLS. First, it allows us to explore the entire conditional distribution of \(Y\) given \(X\), not just the mean, thereby revealing heterogeneous effects of predictors at different outcome levels . For example, an education variable might have a larger impact at the lower tail (10th percentile) of income than at the median or upper tail.
-
-Second, quantile regression is robust to outliers in the response data. OLS estimates can be unduly influenced by a few extreme observations because it minimizes squared errors; in contrast, quantile regression (especially median regression) uses absolute-error-based loss, making it less sensitive to extreme \(Y\) values.
-
-Third, quantile methods remain valid under skewed or heteroskedastic distributions. OLS relies on homoscedasticity and normality assumptions for optimality and inference, whereas quantile regression imposes no such requirements and can capture distributional changes (e.g., increasing variance) across predictor levels.
-
-There are, of course, other approaches to address OLS limitations. Notably, researchers have developed robust regression methods and penalization techniques. For instance, Fan and Li (2001) proposed nonconcave penalized likelihood methods for variable selection, which can be applied to robust regression models.
-
-In this article, we provide an overview of linear quantile regression theory (Section 2) and present a simulation study (Section 3) comparing quantile regression to OLS under various scenarios. We consider both univariate and multivariate predictor cases, examine performance at multiple quantile levels, and evaluate robustness to outliers and sample size changes. A concluding section summarizes the findings. Throughout, we cite key references, including Koenker and Hallock (2001) for an accessible overview, and Fan and Li (2001) for context on related regression advances. The complete R code for our analysis is provided in the Appendix to ensure reproducibility.
-
-\section{2. Linear Quantile Regression: Theory and Methods}\label{linear-quantile-regression-theory-and-methods}
+\section{Linear Quantile Regression: Theory and Methods}\label{linear-quantile-regression-theory-and-methods}
 
 \subsection{Definition and Estimation}\label{definition-and-estimation}
 
@@ -236,43 +226,54 @@ Moreover, QR is \textbf{robust to outliers in \(Y\)}, unlike OLS which minimizes
 
 In the next section, we illustrate these theoretical advantages through a simulation study.
 
-\section{3. Simulation Study}\label{simulation-study}
+\section{Simulation Study}\label{simulation-study}
 
-This section presents a Monte Carlo simulation study designed to compare the performance of \textbf{Ordinary Least Squares (OLS)} and \textbf{Quantile Regression (QR)} estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave across different quantiles of the conditional distribution, particularly under heteroskedasticity, outlier contamination, and varying sample sizes.
+This section presents a Monte Carlo simulation study designed to compare the performance of \textbf{Ordinary Least Squares (OLS)} and \textbf{Quantile Regression (QR)} estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave, particularly under outlier contamination.
 
-\subsection{3.1 Data Generating Process (DGP)}\label{data-generating-process-dgp}
+\subsection{Data Generating Process (DGP)}\label{data-generating-process-dgp}
 
 We consider the linear model:
 
 \[
-Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon,
+Y = \beta_0 + \beta_1 X_1 + \varepsilon,
 \]
 
-with fixed parameters \(\beta_0 = 5\), \(\beta_1 = 1.5\), and \(\beta_2 = -1\). In the univariate setting, only \(X_1\) is included; in the multivariate setting, both \(X_1\) and \(X_2\) are active predictors.
+with fixed parameters \(\beta_0 = 5\), \(\beta_1 = -1.5\).
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Covariates}: \(X_1, X_2 \overset{iid}{\sim} \text{Uniform}(0,10)\).
+  \textbf{Covariates}: \(X_1 \overset{iid}{\sim} \text{Uniform}(0,10)\).
 \item
   \textbf{Error term} \(\varepsilon\) follows different structures to emulate classical and adversarial settings (see below).
 \item
   \textbf{Quantiles studied}: \(\tau = 0.1\), \(0.5\), \(0.9\) to represent lower, central, and upper tails of the conditional distribution.
 \end{itemize}
 
-We focus on:
-- \textbf{Small to large sample regimes}: \(n = 50\), \(100\), \(200\), and \(1000\).
-- \textbf{Replications}: Each configuration is simulated over 100 independent datasets to stabilize the evaluation of finite-sample properties.
-
-The sample sizes were chosen to explore both low-\(n\) variability and convergence behavior, with \(n=100\) serving as a baseline and \(n=1000\) approximating asymptotic regimes.
-
 We estimate parameters using:
-- \texttt{lm()} for OLS (minimizing squared loss)
-- \texttt{rq()} from the \texttt{quantreg} package for QR at various \(\tau\) values (minimizing asymmetric absolute loss; see Section 2).
 
-\subsection{3.2 Simulation Setup}\label{simulation-setup}
+\begin{itemize}
+\tightlist
+\item
+  \texttt{lm()} for OLS (minimizing squared loss)
+\item
+  \texttt{rq()} from the \texttt{quantreg} package for QR at various \(\tau\) values (minimizing asymmetric absolute loss; see Section 2).
+\end{itemize}
 
-We evaluate the estimators under three error structures:
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{beta0 }\OtherTok{\textless{}{-}} \DecValTok{5}
+\NormalTok{beta1 }\OtherTok{\textless{}{-}} \FloatTok{1.5}
+\NormalTok{n }\OtherTok{\textless{}{-}} \DecValTok{1000}
+\NormalTok{X1 }\OtherTok{\textless{}{-}} \FunctionTok{runif}\NormalTok{(n, }\AttributeTok{min =} \DecValTok{0}\NormalTok{, }\AttributeTok{max =} \DecValTok{10}\NormalTok{)}
+\NormalTok{tau }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.25}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\FloatTok{0.75}\NormalTok{, }\FloatTok{0.95}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Simulation Setup}\label{simulation-setup}
+
+We evaluate the estimators under the following error structures:
 
 \begin{itemize}
 \item
@@ -280,39 +281,15 @@ We evaluate the estimators under three error structures:
   \(\varepsilon_i \sim \mathcal{N}(0, \sigma^2),\ \sigma=2\). This setting satisfies OLS assumptions and serves as a benchmark.
 \item
   \textbf{Contaminated Gaussian (outliers)}:
-  \(\varepsilon_i = Z_i + O_i\) with \(Z_i \sim \mathcal{N}(0,2^2)\) and \(O_i = 30\) with probability \(p = 0.05\). This mimics a heavy-tailed distribution or a mixture contamination model, testing robustness. Outliers are introduced:
-
-  \begin{itemize}
-  \tightlist
-  \item
-    randomly (to simulate noise in \(Y\)),
-  \item
-    or conditionally (e.g.~to the largest \(X_1\)) to induce high-leverage effects.
-  \end{itemize}
+  \(\varepsilon_i = Z_i + O_i\) with \(Z_i \sim \mathcal{N}(0,2^2)\) and \(O_i = 50\) with probability \(p = 0.05\). This mimics a mixture contamination model, testing robustness. Outliers are introduced conditionally (to the largest \(X_1\)) to induce high-leverage effects.
 \item
   \textbf{Heteroskedastic}:
   \(\varepsilon_i \sim \mathcal{N}(0,\sigma^2(X_i))\) with \(\sigma(X_i) = 1 + 0.2 X_1\). This setting creates increasing spread in \(Y\) conditional on \(X_1\), violating OLS homoscedasticity.
 \end{itemize}
 
-\subsection{3.3 Evaluation Metrics}\label{evaluation-metrics}
+\subsection{Evaluation Metrics}\label{evaluation-metrics}
 
-For each simulation, we extract the slope estimates (primarily for \(\beta_1\)) and compute:
-
-\begin{itemize}
-\item
-  \textbf{Bias}:
-  \[ 
-  \text{Bias}(\hat\beta) = \mathbb{E}[\hat\beta] - \beta
-  \]
-\item
-  \textbf{RMSE}:
-  \[
-  \text{RMSE}(\hat\beta) = \sqrt{\mathbb{E}[(\hat\beta - \beta)^2]}
-  \]
-\item
-  \textbf{Empirical variability}: Standard deviation of estimates across replications.
-\end{itemize}
-
+*****PENDING*****
 Along with some graphical support, these evaluations provide insight into estimator consistency, robustness, and efficiency under both ideal and adversarial conditions.
 
 The theoretical basis for QR (Section 2) suggests that:
@@ -321,56 +298,43 @@ The theoretical basis for QR (Section 2) suggests that:
 
 This simulation seeks to verify those expectations empirically.
 
-\subsection{3.4 Simulation}\label{simulation}
+\subsection{Simulation}\label{simulation}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{library}\NormalTok{(gridExtra)}
-\NormalTok{plot\_one }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(data, model, title) \{}
-    \FunctionTok{ggplot}\NormalTok{(data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ x1, }\AttributeTok{y =}\NormalTok{ y)) }\SpecialCharTok{+} \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\SpecialCharTok{+}
-        \FunctionTok{geom\_smooth}\NormalTok{(}\AttributeTok{method =} \StringTok{"lm"}\NormalTok{, }\AttributeTok{se =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{color =} \StringTok{"red"}\NormalTok{,}
-            \AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{geom\_quantile}\NormalTok{(}\AttributeTok{quantiles =}\NormalTok{ tau\_levels,}
-        \AttributeTok{color =} \StringTok{"blue"}\NormalTok{, }\AttributeTok{size =} \FloatTok{0.8}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ggtitle}\NormalTok{(title) }\SpecialCharTok{+}
-        \FunctionTok{theme\_minimal}\NormalTok{()}
-\NormalTok{\}}
-\FunctionTok{grid.arrange}\NormalTok{(}\FunctionTok{plot\_one}\NormalTok{(scenarios}\SpecialCharTok{$}\NormalTok{clean\_uni, models}\SpecialCharTok{$}\NormalTok{clean\_uni,}
-    \StringTok{"Clean Univariate"}\NormalTok{), }\FunctionTok{plot\_one}\NormalTok{(scenarios}\SpecialCharTok{$}\NormalTok{outlier\_uni,}
-\NormalTok{    models}\SpecialCharTok{$}\NormalTok{outlier\_uni, }\StringTok{"Outlier Univariate"}\NormalTok{), }\FunctionTok{plot\_one}\NormalTok{(scenarios}\SpecialCharTok{$}\NormalTok{clean\_multi,}
-\NormalTok{    models}\SpecialCharTok{$}\NormalTok{clean\_multi, }\StringTok{"Clean Multivariate"}\NormalTok{), }\FunctionTok{plot\_one}\NormalTok{(scenarios}\SpecialCharTok{$}\NormalTok{outlier\_multi,}
-\NormalTok{    models}\SpecialCharTok{$}\NormalTok{outlier\_multi, }\StringTok{"Outlier Multivariate"}\NormalTok{),}
-    \AttributeTok{ncol =} \DecValTok{2}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
+\begin{center}\includegraphics[width=0.8\linewidth]{ADR_project_files/figure-latex/unnamed-chunk-8-1} \end{center}
 
-\begin{figure}
+\begin{longtable}[]{@{}lrr@{}}
+\caption{\label{tab:unnamed-chunk-9}Comparison of OLS and Quantile Regression Coefficients (Clean Data) - Manual}\tabularnewline
+\toprule\noalign{}
+Coefficient & OLS & QR 0.50 \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Coefficient & OLS & QR 0.50 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+(Intercept) & 5.082 & 5.16 \\
+X1 & -1.512 & -1.52 \\
+\end{longtable}
 
-{\centering \includegraphics[width=0.8\linewidth]{ADR_project_files/figure-latex/boxplots-2x2-1} 
+\begin{longtable}[]{@{}lrr@{}}
+\caption{\label{tab:unnamed-chunk-10}Comparison of OLS and Quantile Regression Coefficients (Clean Data) - Manual}\tabularnewline
+\toprule\noalign{}
+Coefficient & OLS & QR 0.50 \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Coefficient & OLS & QR 0.50 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+(Intercept) & 0.390 & 4.723 \\
+X1 & -0.065 & -1.391 \\
+\end{longtable}
 
-}
-
-\caption{Comparison of slope estimates across settings}\label{fig:boxplots-2x2}
-\end{figure}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{summarize\_slopes }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(model) \{}
-\NormalTok{    slopes }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(model}\SpecialCharTok{$}\NormalTok{qrs, }\ControlFlowTok{function}\NormalTok{(m) }\FunctionTok{coef}\NormalTok{(m)[}\StringTok{"x1"}\NormalTok{])}
-    \FunctionTok{tibble}\NormalTok{(}\AttributeTok{Method =} \FunctionTok{c}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}\StringTok{"QR (tau="}\NormalTok{, tau\_levels,}
-        \StringTok{")"}\NormalTok{), }\StringTok{"OLS"}\NormalTok{), }\AttributeTok{Estimate =} \FunctionTok{c}\NormalTok{(slopes, }\FunctionTok{coef}\NormalTok{(model}\SpecialCharTok{$}\NormalTok{ols)[}\StringTok{"x1"}\NormalTok{]))}
-\NormalTok{\}}
-\FunctionTok{summarize\_slopes}\NormalTok{(models}\SpecialCharTok{$}\NormalTok{clean\_uni)}
-\end{Highlighting}
-\end{Shaded}
-
-\section{A tibble: 6 x 2}\label{a-tibble-6-x-2}
-
-Method Estimate
-1 QR (tau=0.05) 1.48
-2 QR (tau=0.25) 1.54
-3 QR (tau=0.5) 1.38
-4 QR (tau=0.75) 1.43
-5 QR (tau=0.95) 1.50
-6 OLS 1.47
+\begin{center}\includegraphics[width=0.8\linewidth]{ADR_project_files/figure-latex/unnamed-chunk-11-1} \end{center}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -400,9 +364,9 @@ Method Estimate
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{fit25 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.25}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_uni)}
-\NormalTok{fit50 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_uni)}
-\NormalTok{fit75 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.75}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_uni)}
+\NormalTok{fit25 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.25}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_multi)}
+\NormalTok{fit50 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_multi)}
+\NormalTok{fit75 }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.75}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{clean\_multi)}
 \FunctionTok{anova}\NormalTok{(fit25, fit50, fit75)}
 \end{Highlighting}
 \end{Shaded}
@@ -413,8 +377,8 @@ Method Estimate
 ## Model: y ~ x1
 ## Joint Test of Equality of Slopes: tau in {  0.25 0.5 0.75  }
 ## 
-##   Df Resid Df F value  Pr(>F)  
-## 1  2      598  2.9672 0.05221 .
+##   Df Resid Df F value Pr(>F)   
+## 1  2     1498  6.4657 0.0016 **
 ## ---
 ## Signif. codes:  
 ## 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
@@ -425,8 +389,25 @@ Method Estimate
 \CommentTok{\# kbl(anova\_table, caption = \textquotesingle{}Joint Test of}
 \CommentTok{\# Equality of Slopes at Different Quantiles\textquotesingle{}) \%\textgreater{}\%}
 \CommentTok{\# kable\_styling(latex\_options = \textquotesingle{}striped\textquotesingle{})}
+\NormalTok{fit25\_h }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.25}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{outlier\_multi)}
+\NormalTok{fit50\_h }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{outlier\_multi)}
+\NormalTok{fit75\_h }\OtherTok{\textless{}{-}} \FunctionTok{rq}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x1, }\AttributeTok{tau =} \FloatTok{0.75}\NormalTok{, }\AttributeTok{data =}\NormalTok{ scenarios}\SpecialCharTok{$}\NormalTok{outlier\_multi)}
+\FunctionTok{anova}\NormalTok{(fit25\_h, fit50\_h, fit75\_h)}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{verbatim}
+## Quantile Regression Analysis of Deviance Table
+## 
+## Model: y ~ x1
+## Joint Test of Equality of Slopes: tau in {  0.25 0.5 0.75  }
+## 
+##   Df Resid Df F value   Pr(>F)   
+## 1  2     1501   6.048 0.002421 **
+## ---
+## Signif. codes:  
+## 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
