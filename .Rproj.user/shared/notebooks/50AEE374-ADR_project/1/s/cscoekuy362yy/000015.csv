@@ -1,0 +1,7 @@
+"0",""
+"0","legend(""topleft"","
+"0","       legend = c(paste(""QR tau ="", 0.5), ""OLS""),"
+"0","       col = c(rep(""blue"", length(0.5)), ""red""),"
+"0","       lty = c(rep(1, length(0.5)), 2),"
+"0","       lwd = c(rep(1.5, length(0.5)), 3),"
+"0","       cex = 0.8)"

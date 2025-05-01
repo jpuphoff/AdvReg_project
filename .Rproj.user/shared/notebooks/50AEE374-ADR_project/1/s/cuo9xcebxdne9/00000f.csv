@@ -1,0 +1,6 @@
+"0","y_clean <- beta0 - beta1*X1 + rnorm(n, sd=2)"
+"0",""
+"0",""
+"0","ols_clean <- lm(y_clean ~ X1)"
+"0","qr_clean <- rq(y_clean ~ X1, tau =0.5)"
+"0",""

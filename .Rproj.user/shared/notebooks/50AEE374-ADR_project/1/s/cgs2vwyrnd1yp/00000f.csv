@@ -1,0 +1,4 @@
+"0","y_outliers <- y_clean"
+"0","num_outliers <- round(0.05 * n)"
+"0","out_idx <- order(X1, decreasing = TRUE)[1:num_outliers]"
+"0","y_outliers[out_idx] <- y_outliers[out_idx] + 50"
