@@ -79,7 +79,7 @@ install_packages(packages)
 
 # knitr options
 knitr::opts_chunk$set(
-  cache = TRUE, # Cache chunk results
+  cache = FALSE, # Cache chunk results
   echo = FALSE, # Show/Hide code
   warning = FALSE, # Show/Hide warnings
   message = FALSE, # Show/Hide messages
@@ -229,6 +229,43 @@ To quantify the behavior of the estimators, we combine visual inspection with nu
 
 
 ## 3.4 Simulation
+```{r}
+#| label: generate-data-models
+#| include: false
+
+# --- Simulation Setup ---
+set.seed(666) # Ensure reproducibility for simulation run
+n <- 1000 # Sample size from DGP description
+beta0 <- 5   # Intercept from simulation code
+beta1 <- 1.5  # Slope from simulation code (NOTE: Text said -1.5, code uses 1.5)
+outlier_frac <- 0.02
+outlier_shift <- 50
+tau_levels <- c(0.1, 0.5, 0.9) # Ensure this is defined
+
+# --- Generate Data ---
+# 1. Clean univariate data
+data_clean_uni <- simulate_data(n = n, heterosk = FALSE)
+
+# 2. Outlier univariate data
+data_outlier_uni <- data_clean_uni
+num_outliers <- round(outlier_frac * n)
+# Add outliers to highest leverage points (largest x1 values)
+out_idx <- order(data_outlier_uni$x1, decreasing = TRUE)[1:num_outliers]
+data_outlier_uni$y[out_idx] <- data_outlier_uni$y[out_idx] + outlier_shift
+
+# --- Store Data in 'scenarios' list ---
+scenarios <- list(
+  clean_uni = data_clean_uni,
+  outlier_uni = data_outlier_uni
+)
+
+# --- Fit Models ---
+models <- list(
+  clean_uni = fit_models(scenarios$clean_uni),
+  outlier_uni = fit_models(scenarios$outlier_uni)
+)
+```
+
 ```{r boxplots-2x2, fig.width=9, fig.height=6, fig.cap="Comparison of slope estimates across settings"}
 library(gridExtra)
 

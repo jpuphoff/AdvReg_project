@@ -2,3 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
+# knitr cache folders
+*_cache/
+*.Rmd.cache/
+
+# knitr figure output folders
+figure/
+*.Rmd.figures/
+
+# Temporary knit output
+*.utf8.md
+*.knit.md
