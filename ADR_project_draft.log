@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.4.29)  7 MAY 2025 10:02
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.4.29)  7 MAY 2025 12:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -842,8 +842,6 @@ File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 ) (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <5> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 168.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 168.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7.4> not available
@@ -855,6 +853,8 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <8> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 168.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <5> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 168.
 (./ADR_project_draft.toc
 Package polyglossia Info: Option: English, variant=american.
@@ -876,77 +876,60 @@ Package polyglossia Info: Option: English, variant=american.
 \openout5 = `ADR_project_draft.toc'.
 
 
-Underfull \hbox (badness 2237) in paragraph at lines 183--184
-\TU/lmr/m/n/10 heteroscedastic errors. Coefficient stability and
- []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 [1
 
 
 ]
-Underfull \hbox (badness 6859) in paragraph at lines 225--226
+Underfull \hbox (badness 6859) in paragraph at lines 215--216
 []\TU/lmr/m/n/10 whereas QR estimates conditional quantiles.
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 239--240
-\TU/lmr/m/n/10 providing a richer description of the conditional
+Underfull \hbox (badness 1490) in paragraph at lines 240--242
+\TU/lmr/m/n/10 the observations with the largest values of
  []
 
 [2]
-Underfull \hbox (badness 1668) in paragraph at lines 259--260
+Underfull \hbox (badness 1668) in paragraph at lines 252--253
 \TU/lmr/m/n/10 To quantify the behavior of the estimators, we
  []
 
 
-Underfull \hbox (badness 1881) in paragraph at lines 259--260
+Underfull \hbox (badness 1881) in paragraph at lines 252--253
 \TU/lmr/m/n/10 combine visual inspection with numerical perfor-
  []
 
 File: ADR_project_draft_files/figure-latex/unnamed-chunk-2-1.pdf Graphic file (
 type pdf)
 <use ADR_project_draft_files/figure-latex/unnamed-chunk-2-1.pdf>
+File: ADR_project_draft_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (
+type pdf)
+<use ADR_project_draft_files/figure-latex/unnamed-chunk-3-1.pdf>
+Missing character: There is no τ (U+03C4) in font [lmroman10-regular]:mapping=t
+ex-text;!
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 File: ADR_project_draft_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (
 type pdf)
 <use ADR_project_draft_files/figure-latex/unnamed-chunk-4-1.pdf>
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Underfull \hbox (badness 2809) in paragraph at lines 309--310
-[]\TU/lmr/m/n/10 Figure 3 presents a multifaceted comparison
- []
-
-
-Underfull \hbox (badness 1478) in paragraph at lines 309--310
-\TU/lmr/m/n/10 between OLS and quantile regression under het-
- []
-
-
-Underfull \hbox (badness 1675) in paragraph at lines 309--310
-\TU/lmr/m/n/10 non-constant pattern confirms that the marginal
- []
-
-
-Underfull \hbox (badness 2582) in paragraph at lines 309--310
-\TU/lmr/m/n/10 to outliers, whereas QR residuals remain more
+Underfull \hbox (badness 1377) in paragraph at lines 315--316
+\TU/lmr/m/n/10 slope immediately degrading under high leverage
  []
 
 [3]
 File: ADR_project_draft_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (
 type pdf)
 <use ADR_project_draft_files/figure-latex/unnamed-chunk-5-1.pdf>
-File: ADR_project_draft_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (
-type pdf)
-<use ADR_project_draft_files/figure-latex/unnamed-chunk-6-1.pdf>
 
-Underfull \hbox (badness 4181) in paragraph at lines 335--336
+Underfull \hbox (badness 4181) in paragraph at lines 338--339
 []\TU/lmr/m/n/10 Second, QR effectively models distributional
  []
 
-(./ADR_project_draft.bbl [4]) [5
-
-] 
+(./ADR_project_draft.bbl) [4] 
 enddocument/afterlastpage: lastpage setting LastPage.
 (./ADR_project_draft.aux)
  ***********
@@ -954,15 +937,15 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `ADR_project_draft.out' has not changed.
-(rerunfilecheck)             Checksum: FD5F44856161E7A2B7111247EDA97CF4;2062.
+(rerunfilecheck)             Checksum: ACBCDC5FF61A5BC6425AB21BDF85E0DD;1959.
  ) 
 Here is how much of TeX's memory you used:
- 21678 strings out of 476824
- 408536 string characters out of 5803867
- 1951627 words of memory out of 5000000
- 43257 multiletter control sequences out of 15000+600000
+ 21677 strings out of 476824
+ 408525 string characters out of 5803867
+ 1949627 words of memory out of 5000000
+ 43256 multiletter control sequences out of 15000+600000
  583509 words of font info for 118 fonts, out of 8000000 for 9000
  44 hyphenation exceptions out of 8191
- 93i,12n,107p,1535b,543s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,13n,107p,1062b,555s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on ADR_project_draft.pdf (5 pages).
+Output written on ADR_project_draft.pdf (4 pages).

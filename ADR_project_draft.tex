@@ -129,7 +129,7 @@
 \JournalInfo{\ }
 \Archive{\ }
 
-\PaperTitle{Advance Regression Term Project} % Article title
+\PaperTitle{Robustness of OLS vs Quantile Regression: Handling Outliers and Heteroscedasticity} % Article title
 
 \Authors{
 Gerard Palomo \& Juan Pablo Uphoff\textsuperscript{}
@@ -137,7 +137,7 @@ Gerard Palomo \& Juan Pablo Uphoff\textsuperscript{}
 \affiliation{
 
 }
-\affiliation{*\textbf{Contact}: , \href{mailto:XXXXXXXXX@alumnos.uc3m.es}{\nolinkurl{XXXXXXXXX@alumnos.uc3m.es}} and \href{mailto:100508278@alumnos.uc3m.es}{\nolinkurl{100508278@alumnos.uc3m.es}}} % Corresponding author
+\affiliation{*\textbf{Contact}: \href{mailto:100538493@alumnos.uc3m.es}{\nolinkurl{100538493@alumnos.uc3m.es}} and \href{mailto:100508278@alumnos.uc3m.es}{\nolinkurl{100508278@alumnos.uc3m.es}}, www.uc3m.es} % Corresponding author
 
 \Keywords{Quantile Regression, Robustness, Heteroscedasticity, OLS, Outliers} % Keywords
 \newcommand{\keywordname}{Keywords} % Defines the keywords heading name
@@ -153,7 +153,7 @@ Gerard Palomo \& Juan Pablo Uphoff\textsuperscript{}
 %----------------------------------------------------------------------------------------
 
 \Abstract{
-Linear quantile regression (QR) extends ordinary least squares (OLS) by modeling conditional quantiles, offering a richer view of the response variable's distribution beyond the conditional mean provided by OLS. This paper highlights two key advantages of QR over OLS. Firstly, QR provides robustness to outliers in the response variable, a significant limitation for OLS which relies on minimizing squared errors. Secondly, QR allows for modeling distributional heterogeneity, such as heteroscedasticity, which OLS inherently overlooks by focusing solely on the mean. We compare the performance of OLS and linear QR estimators through a simulation study in a univariate setting. We examine performance under three conditions: (1) a baseline scenario with homoscedastic Gaussian errors, (2) contamination where outliers are introduced at high-leverage points to assess robustness, and (3) heteroscedastic errors to assess distributional modeling capabilities. We specifically compare OLS with QR at the 0.1, 0.5 (median), and 0.9 quantiles. Key performance metrics, including Mean Absolute Error (MAE) and coefficient stability, are assessed. Results demonstrate that QR estimates, particularly the median (\(\tau=0.5\)), remain reliable under outlier contamination where OLS estimates become significantly biased. Furthermore, QR effectively captures distributional effects like heteroscedasticity, providing quantile-specific insights that OLS cannot. All simulation code is provided in R for reproducibility.
+Linear quantile regression (QR) extends ordinary least squares (OLS) by modeling conditional quantiles, offering a richer view of the response variable's distribution beyond the conditional mean provided by OLS. This paper highlights two key advantages of QR over OLS. Firstly, QR provides robustness to outliers in the response variable, a significant limitation for OLS which relies on minimizing squared errors. Secondly, QR allows for modeling distributional heterogeneity, such as heteroscedasticity, which OLS inherently overlooks by focusing solely on the mean. We compare the performance of OLS and linear QR estimators through a simple univariate simulation study under three different settings. Results demonstrate that QR estimates remain reliable under outlier contamination where OLS estimates become significantly biased. Furthermore, QR effectively captures distributional effects like heteroscedasticity, providing quantile-specific insights that OLS cannot. All simulation code is provided in R for reproducibility.
 }
 
 %----------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ Classical linear regression, estimated via ordinary least squares (OLS), focuses
 
 Quantile regression (QR), introduced by \citet{Koenker1978}, offers a more comprehensive and robust alternative. By modeling conditional quantiles (e.g., the median, quartiles, deciles), QR addresses the shortcomings of OLS in two crucial ways. First, its estimation, based on minimizing an asymmetrically weighted sum of absolute errors (the check loss function), provides inherent robustness against outliers in the response variable; the influence of extreme observations is bounded, unlike in OLS. Prior studies, such as \citet{Onyedikachi2015}, have confirmed the superior performance of quantile regression over OLS in the presence of outliers. Second, QR provides a mechanism to characterize the entire conditional distribution of the response variable, not just its mean. This allows researchers to understand how predictors affect different parts of the distribution, making it particularly well-suited for analyzing data with heteroscedasticity or other forms of distributional heterogeneity.
 
-This report aims to compare the performance of OLS and linear quantile regression estimators, focusing on these two key advantages of QR. We will demonstrate the robustness advantage of QR, particularly the conditional median (\(\tau=0.5\)), under controlled outlier contamination in a simple linear model, contrasting it with the sensitivity of OLS. Additionally, we will illustrate QR's ability to capture distributional heterogeneity by examining its performance under heteroscedastic errors, showcasing how it provides insights beyond the conditional mean estimated by OLS. We conduct a simulation study designed to highlight these differences visually and quantitatively, examining estimator behavior under three distinct scenarios: (1) a baseline homoscedastic Gaussian setting, (2) the same setting contaminated with high-leverage outliers, and (3) a setting with heteroscedastic errors. Coefficient stability and prediction accuracy (using Mean Absolute Error) are assessed across these scenarios.
+This report aims to compare the performance of OLS and linear quantile regression estimators, focusing on these two key advantages of QR. We will demonstrate the robustness advantage of QR, particularly the conditional median (\(\tau=0.5\)), under controlled outlier contamination in a simple linear model, contrasting it with the sensitivity of OLS. Additionally, we will illustrate QR's ability to capture distributional heterogeneity by examining its performance under heteroscedastic errors, showcasing how it provides insights beyond the conditional mean estimated by OLS. We conduct a simulation study designed to highlight these differences visually and quantitatively, examining estimator behavior under three distinct scenarios: (1) a baseline homoscedastic Gaussian setting, (2) the same setting contaminated with outliers, and (3) a setting with heteroscedastic errors. Coefficient stability and prediction accuracy (using Mean Absolute Error) are assessed across these scenarios.
 
 \section{Linear Quantile Regression: Theory and Methods}\label{linear-quantile-regression-theory-and-methods}
 
@@ -204,16 +204,6 @@ with \(\rho_\tau(u) = u(\tau - \mathbb{I}\{u < 0\})\). For \(\tau = 0.5\), this 
 
 Each \(\tau\) is estimated independently using linear programming, and the family \(\{\beta(\tau)\}\) forms a quantile process describing the full conditional distribution of \(Y\).
 
-\subsection{Inference}\label{inference}
-
-Under regularity conditions, \(\hat\beta(\tau)\) is asymptotically normal:
-
-\[
-\sqrt{n}(\hat\beta(\tau) - \beta(\tau)) \overset{d}{\to} N(0, \Sigma(\tau)),
-\]
-
-with variance estimators obtained via bootstrapping or sandwich estimators \citep{Koenker2005}.
-
 \subsection{Comparison to OLS}\label{comparison-to-ols}
 
 OLS estimates the conditional mean:
@@ -236,7 +226,7 @@ To focus on the theoretical properties discussed in Section 2, we restrict atten
 
 \subsection{Data Generating Process (DGP)}\label{data-generating-process-dgp}
 
-We consider the simple linear model \(Y = \beta_0 + \beta_1 X_1 + \varepsilon\), with fixed parameters \(\beta_0 = 5\) and \(\beta_1 = -1.5\). These values are chosen to induce a moderate negative slope and an interpretable intercept, ensuring that both OLS and QR coefficients remain in a tractable range for interpretation and graphical analysis. The predictor \(X_1\) is generated from a uniform distribution on \([0,10]\), which provides a constant density across its support and avoids introducing implicit bias or skewness into the covariate structure. The sample size \(n = 1000\) is selected to approximate asymptotic behavior while remaining computationally feasible. While we compute QR estimates for multiple quantiles (\(\tau \in \{0.1, 0.5, 0.9\}\)), the primary focus is on \(\tau = 0.5\), which corresponds to the conditional median and allows direct comparison with the OLS estimator of the conditional mean. As highlighted in Section 2, QR estimates \(\beta(\tau)\) independently for each \(\tau\), thus providing a richer description of the conditional distribution of \(Y\) than OLS.
+We consider the simple linear model \(Y = \beta_0 + \beta_1 X_1 + \varepsilon\), with fixed parameters \(\beta_0 = 5\) and \(\beta_1 = -1.5\). These values are chosen to induce a moderate negative slope and an interpretable intercept, ensuring that both OLS and QR coefficients remain in a tractable range for interpretation and graphical analysis. The predictor \(X_1\) is generated from a uniform distribution on \([0,10]\), which provides a constant density across its support and avoids introducing implicit bias or skewness into the covariate structure. The sample size \(n = 1000\) is selected to approximate asymptotic behavior while remaining computationally feasible. The primary focus is on \(\tau = 0.5\), which corresponds to the conditional median and allows direct comparison with the OLS estimator of the conditional mean. As highlighted in Section 2, QR estimates \(\beta(\tau)\) independently for each \(\tau\), providing a richer description of the conditional distribution of \(Y\) than OLS.
 
 \subsection{Simulation Setup}\label{simulation-setup}
 
@@ -247,12 +237,15 @@ To evaluate the estimators under different conditions relevant to their theoreti
 \item
   \textbf{Baseline Homoscedastic Gaussian Errors:} We first consider \(\varepsilon_i \sim \mathcal{N}(0, \sigma^2)\) with a constant variance \(\sigma = 2\). This scenario satisfies the classical OLS assumptions and serves as a benchmark for comparing OLS and QR under ideal conditions.
 \item
-  \textbf{Contaminated Gaussian Errors (Outlier Robustness Test):} To assess robustness, we start with the baseline homoscedastic Gaussian errors and introduce contamination. Specifically, 2\% of the observations (\(n \times 0.02\)) with the largest values of the predictor \(X_1\) (high-leverage points) have their corresponding error terms perturbed by a large positive constant (\(+50\)). This creates vertical outliers combined with leverage, designed to maximally challenge the estimators' stability.
+  \textbf{Contaminated Gaussian Errors (Outlier Robustness Test):} To assess robustness, we begin with homoscedastic Gaussian errors and introduce contamination. Specifically, 2\% of the observations with the largest values of the predictor \(X_1\) (high-leverage points) have their error terms perturbed by a large positive constant (+50), creating vertical outliers with leverage. Additionally, we introduce non high-leverage outliers by randomly selecting 2\% of the observations and adding a large positive shift to their response values.
 \item
-  \textbf{Heteroscedastic Gaussian Errors (Distributional Modeling Test):} To illustrate the ability of QR to model distributional heterogeneity, we simulate errors whose variance increases linearly with the predictor: \(\varepsilon_i \sim \mathcal{N}(0, \sigma_i^2)\), where \(\sigma_i = \sigma_0 (1 + \gamma X_{1i})\). We use parameters like \(\sigma_0 = 1\) and \(\gamma = 0.6\) to generate noticeable heteroscedasticity. This scenario violates the OLS assumption of constant variance.
+  \textbf{Heteroscedastic Gaussian Errors (Distributional Modeling Test):}
+  To demonstrate QR's ability to handle heteroscedasticity, we simulate errors where the variance increases linearly with the predictor:
+  \[
+  \varepsilon_i \sim \mathcal{N}(0, \sigma_i^2), \quad \text{where} \quad \sigma_i = \sigma_0 (1 + \gamma X_{1i}).
+  \]
+  Here, we use the parameters \(\sigma_0 = 1\) and \(\gamma = 0.6\) to introduce \textbf{heteroscedasticity}---a scenario where the error variance depends on the value of the predictor variable (\(X_1\)).
 \end{enumerate}
-
-For each scenario, we fit both the OLS model and QR models at \(\tau \in \{0.1, 0.5, 0.9\}\).
 
 \subsection{Evaluation Metrics}\label{evaluation-metrics}
 
@@ -264,7 +257,7 @@ To quantify the behavior of the estimators, we combine visual inspection with nu
 
 We now illustrate the theoretical differences between OLS and quantile regression through a basic univariate simulation. Using the DGP defined in Section 3.1, we compare both estimators under clean and contaminated conditions. We focus on the conditional median estimate (QR at \(\tau = 0.5\)) and examine how each method responds to the presence of vertical outliers in high-leverage positions.
 
-Figure 1 shows that both OLS (dashed red line) and quantile regression (blue line) yield nearly identical slope estimates when applied to clean, homoscedastic data, in line with the theoretical results discussed in Section 2.3. However, under contamination, even with as little as 2\% of vertical high-leverage outliers, the OLS slope is distorted---flattening as it attempts to minimize squared error. In contrast, the QR line remains unaffected, producing a slope estimate that better reflects the central structure of the data. This illustrates the robustness property of quantile regression highlighted earlier: since QR minimizes a weighted absolute loss, it is less sensitive to large deviations in the response, and more resilient to local anomalies.
+Figure 1 shows that both OLS (dashed red line) and quantile regression (blue line) yield nearly identical slope estimates when applied to clean, homoscedastic data, in line with the theoretical results. However, under contamination, even with as little as 2\% of vertical high-leverage outliers, the OLS slope is distorted---flattening as it attempts to minimize squared error. In contrast, the QR line remains unaffected, producing a slope estimate that better reflects the central structure of the data. This illustrates the robustness property of quantile regression highlighted earlier: since QR minimizes a weighted absolute loss, it is less sensitive to large deviations in the response, and more resilient to local anomalies.
 
 \begin{figure}
 
@@ -272,23 +265,24 @@ Figure 1 shows that both OLS (dashed red line) and quantile regression (blue lin
 
 }
 
-\caption{Comparison of slope estimates across settings}\label{fig:unnamed-chunk-2}
+\caption{OLS vs QR under high leverage outliers}\label{fig:unnamed-chunk-2}
 \end{figure}
-
-Table 2 illustrates the comparative robustness of OLS and quantile regression (QR at \(\tau = 0.5\) under clean and contaminated settings. Both estimators perform similarly in the Gaussian case. However, under contamination, OLS coefficients exhibit severe bias, particularly in the slope, while QR remains stable. This behavior is theoretically consistent with QR's bounded influence function and its minimization of the check loss, which limits sensitivity to extreme values. MAE, aligned with the LAD objective, remains nearly unchanged for QR, whereas OLS shows substantial deterioration. RMSE, although not optimized by QR, is included for standard comparison and further confirms OLS's vulnerability under outlier contamination.
-
-\subsubsection{Heteroscedasticity}\label{heteroscedasticity}
-
-Figure 2 illustrates how the estimated slope coefficient in quantile regression varies across quantile levels \(\tau \in (0.05, 0.95)\) in a heteroskedastic setting. The increasing slope as \(\tau\) increases reflects the presence of conditional heteroskedasticity: higher quantiles are associated with greater dispersion in the response variable \(Y\), which alters the marginal effect of \(X_1\) across the conditional distribution. Quantile regression estimates \(\beta_1(\tau)\) independently for each \(\tau\), capturing variation in the conditional distribution of \(Y\) while the slope of OLS remains constant because it targets the conditional mean and assumes homoscedasticity.
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.8\linewidth]{ADR_project_draft_files/figure-latex/unnamed-chunk-4-1} 
+{\centering \includegraphics[width=0.8\linewidth]{ADR_project_draft_files/figure-latex/unnamed-chunk-3-1} 
 
 }
 
-\caption{Slope vs Quantile for heteroskedastic data}\label{fig:unnamed-chunk-4}
+\caption{OLS vs QR under random outliers}\label{fig:unnamed-chunk-3}
 \end{figure}
+
+Figure 2 illustrates how non high-leverage outliers affect slope estimates. In this specific scenario, both Ordinary Least Squares (OLS) and Quantile Regression (QR) produce similar results, with OLS showing minimal sensitivity to the outliers. This limited impact occurs because the outliers do not occupy high-leverage positions and therefore exert little influence on the slope.
+
+As shown in Table 1, the evaluation of all scenarios reveals that OLS and Quantile Regression (QR) at τ = 0.5 perform similarly under clean data conditions. However, when outliers are introduced, OLS exhibits significant bias, particularly in the slope, and its error metrics (MAE and RMSE), computed on the clean data, deteriorate.
+In the case of high leverage outliers, where extreme X values exert a large influence on the model, OLS shows substantial bias in the slope, while QR remains stable with minimal bias and consistent error metrics.
+For random outliers, where extreme Y values are scattered across the data, OLS again shows deterioration in its estimates and error metrics, whereas QR maintains its robustness, demonstrating limited sensitivity to both types of outliers.
+This behavior aligns with QR's bounded influence function, which limits the impact of extreme values, unlike OLS, which is more vulnerable to contamination.
 
 \begin{table}[!h]
 \centering
@@ -298,17 +292,37 @@ Figure 2 illustrates how the estimated slope coefficient in quantile regression 
 \toprule
 Model & Method & Intercept & Slope & Slope\_Bias & MAE & RMSE\\
 \midrule
-Gaussian & QR & 4.903 & -1.468 & 0.032 & 1.533 & 1.925\\
-Contaminated & QR & 4.791 & -1.442 & 0.058 & 1.534 & 1.930\\
-Gaussian & OLS & 4.931 & -1.487 & 0.013 & 1.534 & 1.924\\
-Contaminated & OLS & 3.004 & -0.903 & 0.597 & 2.229 & 2.746\\
+Clean & QR & 4.903 & -1.468 & 0.032 & 1.533 & 1.925\\
+Clean & OLS & 4.931 & -1.487 & 0.013 & 1.534 & 1.924\\
+Highe Leverage Outliers & QR & 4.791 & -1.442 & 0.058 & 1.534 & 1.930\\
+Highe Leverage Outliers & OLS & 3.004 & -0.903 & 0.597 & 2.229 & 2.746\\
+Random Outliers & QR & 4.935 & -1.468 & 0.032 & 1.533 & 1.927\\
+\addlinespace
+Random Outliers & OLS & 5.917 & -1.484 & 0.016 & 1.726 & 2.168\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Figure 3 presents a multifaceted comparison between OLS and quantile regression under heteroskedasticity and contamination. In the top-left panel, QR lines at \(\tau = 0.1, 0.5, 0.9\) capture the conditional distributional spread of \(Y\), while OLS fits a single conditional mean. The top-right panel plots the estimated slope \(\beta_1(\tau)\) across quantiles. The non-constant pattern confirms that the marginal effect of \(X\) varies with \(\tau\), violating the constant-slope assumption implicit in OLS, as discussed in Section 2.3. The bottom-left panel illustrates robustness: under contamination, OLS is pulled downward due to extreme values in \(Y\), while the median QR line remains stable. Finally, the residual histograms (bottom-right) show that OLS residuals are more dispersed and asymmetric, reflecting its sensitivity to outliers, whereas QR residuals remain more concentrated.
-
 \begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{ADR_project_draft_files/figure-latex/unnamed-chunk-4-1} 
+
+}
+
+\caption{Estimated slope vs outlier contamination}\label{fig:unnamed-chunk-4}
+\end{figure}
+
+Figure 3 shows Ordinary Least Squares (OLS) slope immediately degrading under high leverage outlier contamination due to its sensitivity to squared errors. Quantile Regression (QR) initially resists, maintaining a stable slope by focusing on the median. However, QR breaks down beyond a critical outlier threshold (around 25\%) as outliers then redefine the median.
+
+As contamination approaches 100\%, both OLS and QR exhibit a similar pattern: the original data points become the new \enquote{outliers.} Consequently, the estimated slope for both methods may revert to a value resembling the original slope. Critically, this is not a true recovery for either, as the entire fitted line has significantly shifted, now reflecting the characteristics of the overwhelming majority of (initially outlying) data points.
+
+\subsubsection{Heteroscedasticity}\label{heteroscedasticity}
+
+Beyond outlier robustness, Quantile Regression also excels in capturing distributional changes. This subsection demonstrates its effectiveness in handling heteroscedasticity, where the response variable's spread is dependent on the predictors.
+
+In Figure 4 illustrates how the estimated slope coefficient in quantile regression varies across quantile levels \(\tau \in (0.1, 0.9)\) in a heteroskedastic setting. The increasing slope as \(\tau\) increases reflects the presence of conditional heteroskedasticity: higher quantiles are associated with greater dispersion in the response variable \(Y\), which alters the marginal effect of \(X_1\) across the conditional distribution. Quantile regression estimates \(\beta_1(\tau)\) independently for each \(\tau\), capturing variation in the conditional distribution of \(Y\) while the slope of OLS remains constant because it targets the conditional mean and assumes homoscedasticity.
+
+\begin{figure}[h]
 
 {\centering \includegraphics[width=0.8\linewidth]{ADR_project_draft_files/figure-latex/unnamed-chunk-5-1} 
 
@@ -317,20 +331,9 @@ Figure 3 presents a multifaceted comparison between OLS and quantile regression 
 \caption{Slope vs Quantile for heteroskedastic data}\label{fig:unnamed-chunk-5}
 \end{figure}
 
-Figure 4 shows the evolution of the estimated slope \(\hat{\beta}_1\) as a function of outlier contamination. QR remains stable under moderate contamination, exhibiting high resistance to leverage-induced distortion. However, once the proportion of outliers exceeds a critical threshold (around 25\%), their influence becomes structurally dominant---shifting the conditional median itself and leading to breakdown. In contrast, OLS degrades continuously, with no resistance to contamination at any level.
-
-\begin{figure}
-
-{\centering \includegraphics[width=0.8\linewidth]{ADR_project_draft_files/figure-latex/unnamed-chunk-6-1} 
-
-}
-
-\caption{Estimated slope vs outlier contamination}\label{fig:unnamed-chunk-6}
-\end{figure}
-
 \section{Discussion \& Conclusions}\label{discussion-conclusions}
 
-This report has compared ordinary least squares (OLS) and quantile regression (QR) for modeling linear relationships, focusing on scenarios where classical OLS assumptions are violated. Through controlled simulations, we demonstrated two primary advantages of QR. Firstly, QR, particularly median regression (\(\tau=0.5\)\$, exhibits significant \textbf{robustness to outliers}, providing stable and reliable coefficient estimates even under contamination with high-leverage points, a condition where OLS estimates suffered severe bias (as shown in Figure 1 and Table 2. This resilience stems from QR's use of the check loss function, which minimizes absolute deviations rather than squared deviations.
+This report has compared ordinary least squares (OLS) and quantile regression (QR) for modeling linear relationships, focusing on scenarios where classical OLS assumptions are violated. Through controlled simulations, we demonstrated two primary advantages of QR. Firstly, QR, particularly median regression (\(\tau=0.5\)), exhibits significant \textbf{robustness to outliers}, providing stable and reliable coefficient estimates even under contamination with high-leverage points, a condition where OLS estimates suffered severe bias (as shown in Figure 1 and Table 2. This resilience stems from QR's use of the check loss function, which minimizes absolute deviations rather than squared deviations.
 
 Second, QR effectively models distributional heterogeneity, capturing how predictor effects vary across the conditional distribution. Our heteroscedasticity simulations (Figures 2 and 3) revealed trends and spread that OLS, focused solely on the conditional mean, entirely misses. In conclusion, while OLS remains a foundational method for estimating conditional means, quantile regression (QR) provides a more versatile framework---particularly in settings involving outliers, heteroscedasticity, or deviations from Gaussian error structures---by capturing the full conditional distribution and enabling quantile-specific inference on covariate effects.
 
