@@ -19,7 +19,7 @@ JEL: [C15, C21]
 acknowledgements: >
   This report was completed for the course **Advanced Regression and Prediction**, as part of the **MSc in Statistics for Data Science** at **University Carlos III of Madrid**.
 #journalinfo: "Working Paper, MSc in Statistics for Data Science, Carlos III University of Madrid"
-#archive: "DOI: N/A (internal report)"
+archive: "DOI: N/A (internal report)"
 date: "`r Sys.Date()`"
 lang: en-US
 keywordlabel: Keywords
@@ -35,6 +35,8 @@ preamble: >
   \hyphenation{quan-tile re-gres-sion out-li-ers het-ero-ske-das-tic}
 always_allow_html: yes
 csquotes: true
+header-includes:
+  - \usepackage{float}
 output:
   bookdown::pdf_book:
     citation_package: natbib
@@ -49,9 +51,6 @@ output:
     mainfont: "Times New Roman"  
     monofont: "Courier New"  
     template: latex/template.tex
-header-includes:
-  - \usepackage{float}
-
 ---
 
 ```{r}
@@ -93,7 +92,7 @@ options(width = 50)
 
 # ggplot style
 library("tidyverse")
-theme_set(theme_bw())
+theme_set(theme_minimal())
 theme_update(
   panel.background = element_rect(fill = "transparent", colour = NA),
   plot.background = element_rect(fill = "transparent", colour = NA)
@@ -115,7 +114,7 @@ library(kableExtra)
 library(tibble)
 
 set.seed(666)
-theme_set(theme_bw())
+theme_minimal()
 theme_update(
   panel.background = element_rect(fill = "transparent", colour = NA),
   plot.background = element_rect(fill = "transparent", colour = NA)
@@ -199,9 +198,9 @@ In the next section, we illustrate these theoretical advantages through a simula
 
 # Simulation Study
 
-This section presents a simulation study designed to compare the performance of **Ordinary Least Squares (OLS)** and **Quantile Regression (QR)** estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave, particularly under outlier contamination and additionally under heteroscedasticity.
+This section presents a simulation study designed to compare the performance of Ordinary Least Squares (OLS) and Quantile Regression (QR) estimators under controlled, interpretable scenarios. Our aim is to assess how both methods behave, particularly under outlier contamination and additionally under heteroscedasticity.
 
-To focus on the theoretical properties discussed in Section 2, we restrict attention to a simple univariate linear model with a single predictor. This allows for clean interpretation and visual representation of the results. Additionally, we consider three error structures: a baseline homoscedastic Gaussian case, a contaminated version with outliers at high-leverage points and a heteroscedastic case. This controlled setup isolates the impact of extreme observations on both methods, and is helps to reveal the key differences in robustness and sensitivity. 
+To focus on the theoretical properties discussed in Section 2, we restrict attention to a simple univariate linear model with a single predictor. This allows for clean interpretation and visual representation of the results. Additionally, we consider three error structures: a baseline homoscedastic Gaussian case, a contaminated version with different outlier configurations and a heteroscedastic case. This controlled setup isolates the impact of extreme observations on both methods, and is helps to reveal the key differences in robustness and sensitivity. 
 
 ## Data Generating Process (DGP)
 
@@ -217,17 +216,15 @@ To evaluate the estimators under different conditions relevant to their theoreti
 2.  **Contaminated Gaussian Errors (Outlier Robustness Test):** To assess robustness, we begin with homoscedastic Gaussian errors and introduce contamination. Specifically, 2% of the observations with the largest values of the predictor \(X_1\) (high-leverage points) have their error terms perturbed by a large positive constant (+50), creating vertical outliers with leverage. Additionally, we introduce non high-leverage outliers by randomly selecting 2% of the observations and adding a large positive shift to their response values.
 
 3.  **Heteroscedastic Gaussian Errors (Distributional Modeling Test):** 
-To demonstrate QR's ability to handle heteroscedasticity, we simulate errors where the variance increases linearly with the predictor:
+To demonstrate QR’s ability to handle heteroscedasticity, we simulate errors where the variance increases linearly with the predictor:
 $$
-\varepsilon_i \sim \mathcal{N}(0, \sigma_i^2), \quad \text{where} \quad \sigma_i = \sigma_0 (1 + \gamma X_{1i}).
+\varepsilon_i \sim \mathcal{N}(0, \sigma^2_i), \quad \text{where} \quad \sigma_i = \sigma_0 (1 + \gamma X_{1i}).
 $$
-Here, we use the parameters $\sigma_0 = 1$ and $\gamma = 0.6$ to introduce **heteroscedasticity**—a scenario where the error variance depends on the value of the predictor variable ($X_1$).
-
+Here, we use the parameters \( \sigma_0 = 1 \) and \( \gamma = 0.6 \) to introduce heteroscedasticity—a scenario where the error variance depends on the value of the predictor variable \( X_1 \). As \( X_1 \) increases, the error spread also increases, creating a funnel-shaped distribution of \( Y \). While OLS assumes constant variance (homoscedasticity), Quantile Regression (QR) captures this heterogeneity naturally, providing a more accurate view of the distributional effects.
 
 ## Evaluation Metrics
 
-To quantify the behavior of the estimators, we combine visual inspection with numerical performance metrics. Given that QR minimizes absolute deviations, particularly for $\tau = 0.5$, we employ the **Mean Absolute Error (MAE)** as the primary metric. MAE is defined as $\text{MAE} = \frac{1}{n} \sum_{i=1}^n |y_i - \hat{y}_i|$, and aligns directly with the objective function of the LAD estimator. It provides a robust measure of predictive accuracy and is less sensitive to outliers than the **RMSE**, which disproportionately penalizes large deviations. This makes MAE more appropriate when comparing methods under contamination or heavy-tailed noise, as discussed by \citet{Koenker2005}.
-
+To quantify the behavior of the estimators, we combine visual inspection with numerical performance metrics. Given that QR minimizes absolute deviations, particularly for $\tau = 0.5$, we employ Mean Absolute Error (MAE) as the primary metric, defined as $\text{MAE} = \frac{1}{n} \sum_{i=1}^n |y_i - \hat{y}_i|$. MAE aligns directly with the objective function of the LAD estimator, providing a robust measure of predictive accuracy and being less sensitive to outliers. In contrast, we also report the Root Mean Squared Error (RMSE), defined as $\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2}$. While RMSE emphasizes large deviations by squaring the residuals, making it sensitive to outliers, it is widely used for comparing model performance under standard conditions. Although MAE is more appropriate when comparing methods under contamination or heavy-tailed noise, as discussed by \citet{Koenker2005}, together they provide complementary insights: MAE highlights the model’s general prediction accuracy, while RMSE reveals the impact of extreme deviations on model performance.
 
 ## Simulation
 
@@ -258,54 +255,64 @@ ols_outliers <- lm(y_outliers ~ X1)
 qr_outliers <- rq(y_outliers ~ X1, tau = 0.5)
 ols_outliers_rand <- lm(y_outliers_rand ~ X1)
 qr_outliers_rand <- rq(y_outliers_rand ~ X1, tau = 0.5)
-
-
 ```
 
-Figure 1 shows that both OLS (dashed red line) and quantile regression (blue line) yield nearly identical slope estimates when applied to clean, homoscedastic data, in line with the theoretical results. However, under contamination, even with as little as 2% of vertical high-leverage outliers, the OLS slope is  distorted—flattening as it attempts to minimize squared error. In contrast, the QR line remains unaffected, producing a slope estimate that better reflects the central structure of the data. This illustrates the robustness property of quantile regression highlighted earlier: since QR minimizes a weighted absolute loss, it is less sensitive to large deviations in the response, and more resilient to local anomalies.
+```{r fig.width=9, fig.height=6, fig.pos="h"}
+#| label: fig1
+#| fig.cap: "OLS vs QR under high leverage outliers"
 
-```{r fig.width=9, fig.height=6, fig.cap="OLS vs QR under high leverage outliers"}
+# Load patchwork for easier layout control
+library(patchwork)
+
 # Plot 1: Clean data
 df_clean <- data.frame(X1 = X1, Y = y_clean)
 p_1 <- ggplot(df_clean, aes(x = X1, y = Y)) +
   geom_point(color = "grey") +
-  geom_smooth(method = "lm", se = FALSE, color = "darkred", linetype = "dashed") +
-  geom_quantile(quantiles = 0.5, method = "rq", formula = y ~ x, color = "blue") +
-  labs(title = "Clean Data: OLS vs QR (tau = 0.5)")
+  geom_smooth(method = "lm", se = FALSE, aes(color = "OLS (Red Dashed)"), linetype = "dashed") +
+  geom_quantile(quantiles = 0.5, method = "rq", formula = y ~ x, aes(color = "QR (Blue)")) +
+  labs(title = "Clean Data: OLS vs QR (tau = 0.5)") +
+  scale_color_manual(values = c("OLS (Red Dashed)" = "darkred", "QR (Blue)" = "blue")) +
+  theme(legend.position = "bottom") +
+  theme_minimal()
+
 
 # Plot 2: With outliers high leverage
 df_out <- data.frame(X1 = X1, Y = y_outliers)
 p_2 <- ggplot(df_out, aes(x = X1, y = Y)) +
   geom_point(color = "grey") +
-  geom_smooth(method = "lm", se = FALSE, color = "darkred", linetype = "dashed") +
-  geom_quantile(quantiles = 0.5, method = "rq", formula = y ~ x, color = "blue") +
-  labs(title = "With high leverage Outliers: OLS vs QR (tau = 0.5)")
+  geom_smooth(method = "lm", se = FALSE, aes(color = "OLS (Red Dashed)"), linetype = "dashed") +
+  geom_quantile(quantiles = 0.5, method = "rq", formula = y ~ x, aes(color = "QR (Blue)")) +
+  labs(title = "With High Leverage Outliers: OLS vs QR (tau = 0.5)") +
+  scale_color_manual(values = c("OLS (Red Dashed)" = "darkred", "QR (Blue)" = "blue")) +
+  theme(legend.position = "bottom") +
+  theme_minimal()
 
-# Combine plots
-grid.arrange(p_1, p_2, nrow = 1)
+# Combine plots with a single shared legend using patchwork
+p_1 + p_2 + plot_layout(guides = "collect") & theme(legend.position = "bottom")
 ```
+Figure \@ref(fig:fig1) shows that both OLS (dashed red line) and quantile regression (blue line) yield nearly identical slope estimates when applied to clean, homoscedastic data, in line with the theoretical results. However, under contamination, even with as little as 2% of vertical high-leverage outliers, the OLS slope is  distorted—flattening as it attempts to minimize squared error. In contrast, the QR line remains unaffected, producing a slope estimate that better reflects the central structure of the data. This illustrates the robustness property of quantile regression highlighted earlier: since QR minimizes a weighted absolute loss, it is less sensitive to large deviations in the response, and more resilient to local anomalies.
 
-```{r fig.width=9, fig.height=6, fig.cap="OLS vs QR under random outliers"}
+Figure \@ref(fig:fig2) illustrates how non high-leverage outliers affect slope estimates. In this specific scenario, both Ordinary Least Squares (OLS) and Quantile Regression (QR) produce similar results, with OLS showing minimal sensitivity to the outliers. This limited impact occurs because the outliers do not occupy high-leverage positions and therefore exert little influence on the slope.
+
+```{r fig.width=9, fig.height=6, fig.cap="OLS vs QR under random outliers", fig.pos="h"}
+#| label: fig2
+
 df_out_rand <- data.frame(X1 = X1, Y = y_outliers_rand)
 p_3 <- ggplot(df_out_rand, aes(x = X1, y = Y)) +
   geom_point(color = "grey") +
   geom_smooth(method = "lm", se = FALSE, color = "darkred", linetype = "dashed") +
   geom_quantile(quantiles = 0.5, method = "rq", formula = y ~ x, color = "blue") +
-  labs(title = "With random Outliers: OLS vs QR (tau = 0.5)")
+  labs(title = "With random Outliers: OLS vs QR (tau = 0.5)") +
+  theme_minimal()
 
 
 p_3
 ```
 
-Figure 2 illustrates how non high-leverage outliers affect slope estimates. In this specific scenario, both Ordinary Least Squares (OLS) and Quantile Regression (QR) produce similar results, with OLS showing minimal sensitivity to the outliers. This limited impact occurs because the outliers do not occupy high-leverage positions and therefore exert little influence on the slope.
 
-As shown in Table 1, the evaluation of all scenarios reveals that OLS and Quantile Regression (QR) at τ = 0.5 perform similarly under clean data conditions. However, when outliers are introduced, OLS exhibits significant bias, particularly in the slope, and its error metrics (MAE and RMSE), computed on the clean data, deteriorate.
-In the case of high leverage outliers, where extreme X values exert a large influence on the model, OLS shows substantial bias in the slope, while QR remains stable with minimal bias and consistent error metrics.
-For random outliers, where extreme Y values are scattered across the data, OLS again shows deterioration in its estimates and error metrics, whereas QR maintains its robustness, demonstrating limited sensitivity to both types of outliers.
-This behavior aligns with QR's bounded influence function, which limits the impact of extreme values, unlike OLS, which is more vulnerable to contamination.
+```{r}
+#| label: table1
 
-
-```{r echoFALSE}
 set.seed(666)
 
 evaluate_model <- function(y_obs, y_true, X1, label, method = "qr") {
@@ -317,7 +324,7 @@ evaluate_model <- function(y_obs, y_true, X1, label, method = "qr") {
   pred <- predict(fit)
   mae <- mean(abs(y_true - pred))
   rmse <- sqrt(mean((y_true - pred)^2))
-  slope_bias <- coef(fit)[2] + 1.5  # because true beta1 = -1.5
+  slope_bias <- coef(fit)[2] + 1.5  
   data.frame(
     Model = label,
     Method = toupper(method),
@@ -351,14 +358,15 @@ knitr::kable(evals, digits = 3, format = "latex", booktabs = TRUE,
 ```
 
 
-```{r fig.width=9, fig.height=6, fig.cap="Estimated slope vs outlier contamination"}
-# OLS vs. QR: effect of outliers
+```{r fig.width=9, fig.height=6, fig.cap="Estimated slope vs outlier contamination", fig.pos="h"}
+#| label: fig3
+
 n = 1000
-set.seed(500)
+set.seed(666)
 data_base <- simulate_data(n = n, heterosk = FALSE)
 X1 <- data_base$x1
 y_base <- data_base$y
-contam_levels <- seq(0, 1, by = 0.02)  # 0% to 50% de outliers
+contam_levels <- seq(0, 1, by = 0.02)  # 0% to 100% de outliers
 
 estimate_slope <- function(frac, method) {
   y_mod <- y_base
@@ -377,7 +385,7 @@ results$Slope <- mapply(estimate_slope, results$Contamination, tolower(results$M
 ggplot(results, aes(x = Contamination, y = Slope, color = Method)) +
   geom_line() +
   geom_hline(yintercept = beta1, linetype = "dashed", color = "black") +
-  scale_color_manual(values = c("OLS" = "red", "QR" = "blue")) +
+  scale_color_manual(values = c("OLS" = "darkred", "QR" = "blue")) +
   labs(
     title = "Estimated Slope vs Outlier Contamination",
     x = "Contamination Fraction",
@@ -387,18 +395,16 @@ ggplot(results, aes(x = Contamination, y = Slope, color = Method)) +
   theme_minimal()
 ```
 
-Figure 3 shows Ordinary Least Squares (OLS) slope immediately degrading under high leverage outlier contamination due to its sensitivity to squared errors. Quantile Regression (QR) initially resists, maintaining a stable slope by focusing on the median. However, QR breaks down beyond a critical outlier threshold (around 25%) as outliers then redefine the median.
+Figure \@ref(fig:fig3) shows Ordinary Least Squares (OLS) slope immediately degrading under high leverage outlier contamination due to its sensitivity to squared errors. Quantile Regression (QR) initially resists, maintaining a stable slope by focusing on the median. However, QR breaks down beyond a critical outlier threshold (around 25%) as outliers then redefine the median.
 
-As contamination approaches 100%, both OLS and QR exhibit a similar pattern: the original data points become the new "outliers." Consequently, the estimated slope for both methods may revert to a value resembling the original slope. Critically, this is not a true recovery for either, as the entire fitted line has significantly shifted, now reflecting the characteristics of the overwhelming majority of (initially outlying) data points.
+As contamination approaches 100%, both OLS and QR exhibit a similar pattern: the original data points become the new "outliers". Consequently, the estimated slope for both methods may revert to a value resembling the original slope. Critically, this is not a true recovery for either, as the entire fitted line has significantly shifted, now reflecting the characteristics of the overwhelming majority of (initially outlying) data points.
 
 ### Heteroscedasticity
 
 Beyond outlier robustness, Quantile Regression also excels in capturing distributional changes. This subsection demonstrates its effectiveness in handling heteroscedasticity, where the response variable's spread is dependent on the predictors.
 
-In Figure 4 illustrates how the estimated slope coefficient in quantile regression varies across quantile levels $\tau \in (0.1, 0.9)$ in a heteroskedastic setting. The increasing slope as $\tau$ increases reflects the presence of conditional heteroskedasticity: higher quantiles are associated with greater dispersion in the response variable $Y$, which alters the marginal effect of $X_1$ across the conditional distribution. Quantile regression estimates $\beta_1(\tau)$ independently for each $\tau$, capturing variation in the conditional distribution of $Y$ while the slope of OLS remains constant because it targets the conditional mean and assumes homoscedasticity.
-
-
 ```{r fig.width=9, fig.height=6, fig.cap="Slope vs Quantile for heteroskedastic data", fig.pos="h"}
+#| label: fig4
 # Simulate heteroscedastic data
 set.seed(666)
 n <- 1000
@@ -411,7 +417,7 @@ qr_fit <- rq(Y ~ X, data = data, tau = c(0.1, 0.5, 0.9))
 # Plot 3
 p1 <- ggplot(data, aes(x = X, y = Y)) +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linetype = "dashed") +
   geom_quantile(quantiles = c(0.1, 0.5, 0.9), color = "blue", linewidth = 0.8) +
   labs(title = "OLS vs Quantile Regression Lines", y = "Y", x = "X") +
   theme_minimal()
@@ -421,7 +427,7 @@ taus <- seq(0.05, 0.95, by = 0.1)
 slopes <- sapply(taus, function(tau) coef(rq(Y ~ X, tau = tau))[2])
 p2 <- ggplot(data.frame(tau = taus, slope = slopes), aes(x = tau, y = slope)) +
   geom_line(color = "blue") +
-  geom_hline(yintercept = coef(ols_fit)[2], linetype = "dashed", color = "red") +
+  geom_hline(yintercept = coef(ols_fit)[2], linetype = "dashed", color = "darkred") +
   labs(title = "Slope estimates across quantiles", y = "Slope", x = "Quantile (tau)") +
   theme_minimal()
 
@@ -429,12 +435,14 @@ grid.arrange(p1, p2, nrow = 1)
 
 ```
 
+In Figure \@ref(fig:fig4) illustrates how the estimated slope coefficient in quantile regression varies across quantile levels $\tau \in (0.1, 0.9)$ in a heteroskedastic setting. The increasing slope as $\tau$ increases reflects the presence of conditional heteroskedasticity: higher quantiles are associated with greater dispersion in the response variable $Y$, which alters the marginal effect of $X_1$ across the conditional distribution. Quantile regression estimates $\beta_1(\tau)$ independently for each $\tau$, capturing variation in the conditional distribution of $Y$ while the slope of OLS remains constant because it targets the conditional mean and assumes homoscedasticity.
+
 
 # Discussion & Conclusions
 
-This report has compared ordinary least squares (OLS) and quantile regression (QR) for modeling linear relationships, focusing on scenarios where classical OLS assumptions are violated. Through controlled simulations, we demonstrated two primary advantages of QR. Firstly, QR ($\tau=0.5$) exhibits significant **robustness to outliers**, providing stable and reliable coefficient estimates even under contamination with high-leverage points, a condition where OLS estimates suffered severe bias (as shown in Figure 1 and Table 1. This resilience stems from QR's use of the check loss function, which minimizes absolute deviations rather than squared deviations. 
+This report has compared ordinary least squares (OLS) and quantile regression (QR) for modeling linear relationships, focusing on scenarios where classical OLS assumptions are violated. Through controlled simulations, we demonstrated two primary advantages of QR. Firstly, QR ($\tau=0.5$) exhibits significant robustness to outliers, providing stable and reliable coefficient estimates even under contamination with high-leverage points, a condition where OLS estimates suffered severe bias (as shown in Figure \@ref(fig:fig1) and Table 1. This resilience stems from QR's use of the check loss function, which minimizes absolute deviations rather than squared deviations. 
 
 Second, QR effectively models distributional heterogeneity, capturing how predictor effects vary across the conditional distribution. Our heteroscedasticity simulations (Figures 4) revealed trends and spread that OLS, focused solely on the conditional mean, entirely misses. In conclusion, while OLS remains a foundational method for estimating conditional means, quantile regression (QR) provides a more versatile framework—particularly in settings involving outliers, heteroscedasticity, or deviations from Gaussian error structures—by capturing the full conditional distribution and enabling quantile-specific inference.
 
 
-**Acknowledgements: This report has been made with a template in R Markdown, taking as example the paper written by \citet{FanLi2001}. CHATGPT has been used for cleaning the code and debugging.**
+**Acknowledgements: This report has been made with a template in R Markdown, taking as example the paper written by \citet{FanLi2001}. Generative AI has been used for cleaning and debugging the code.**
